@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Magazine Subscriber Registrar</title>
+    <style>
+    body {
+      font-family: Arial, Helvetica, sans-serif, serif;
+      background-color: #f9f9f9;
+      padding: 20px;
+    }
+    h1, h2 {
+      color: #2c2c2c;
+    }
+    form {
+      background: #fff;
+      padding: 15px;
+      border: 1px solid #ccc;
+      max-width: 500px;
+      margin-bottom: 30px;
+    }
+    label {
+      display: block;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+    input {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      box-sizing: border-box;
+    }
+    button {
+      margin-top: 15px;
+      padding: 10px 15px;
+      background-color: #333;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #555;
+    }
+    .subscriber-card {
+      background: #fff;
+      border: 1px solid #ccc;
+      padding: 10px;
+      margin-bottom: 10px;
+      max-width: 500px;
+    }
+    .subscriber-card button {
+      margin-top: 5px;
+      background-color: #ff9800;
+    }
+  </style>
+</head>
+
+
+<body>
+    <h1>Please Subscribe to our Magazine!</h1>
+    <p>Fill out the form below to become a subscriber and join our community!</p>
+
+    <form id="subscriberForm">
+        <label for="name">Subscriber Name*</label>
+        <input type="text" id="name" required>
+
+        <label for="email">Email address*</label>
+        <input type="email" id="email" required>
+
+        <label for="age">Age / reader level*</label>
+        <input type="number" id="age" required>
+
+        <label for="address">Street Address*</label>
+        <input type="text" id="address" required>
+
+        <label for="phone">Phone number</label>
+        <input type="tel" id="phone">
+
+        <button type="submit">Subscribe</button>
+    </form>
+    
+    <h1> Subscribers</h1>
+    <div id = "subscriberList"></div>
+
+    
+<script src="subscribers.js"></script>
+</body>
+</html>
