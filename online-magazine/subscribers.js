@@ -1,38 +1,65 @@
 let subscribers = JSON.parse(localStorage.getItem("subscribers")) || [];
+let editIndex = -1;
 
 const form = document.getElementById("subscriberForm");
 const subscriberList = document.getElementById("subscriberList");
+const messageBox = document.getElementById("messageBox");
 
-function displaySubscribers(){
-    subscriberList.innerHTML = "";
-    subscribers.forEach((sub,index) =>{
-        const card = document.createElement("div");
-        card.className = "subscriber-card";
-        card.innerHTML=`
-        <strong> ${sub.name}</strong><br>
-        Email: ${sub.email}<br>
-        Age/level: ${sub.age}<br>
-        Address: ${sub.address}<br>
-        Phone: ${sub.phone}<br>
-        <button onclick="editSubscriber(${index})">Edit</button>
-        <button onclick="deleteSubscriber(${index})">Delete</button>
-        `;
-        subscriberList.appendChild(card);
-    });
+function showMessage(message, type) {
+  messageBox.innerHTML = `<div class="alert alert-${type}" role="alert">${message}</div>`;
 }
 
-form.addEventListener("submit", function(e) {
+function displaySubscribers() {
+  subscriberList.innerHTML = "";
+
+  if (subscribers.length === 0) {
+    subscriberList.innerHTML = `<div class="alert alert-secondary">No subscribers yet.</div>`;
+    return;
+  }
+
+  subscribers.forEach((sub, index) => {
+    const card = document.createElement("div");
+    card.className = "card mb-3 shadow-sm";
+    card.innerHTML = `
+      <div class="card-body">
+        <h5 class="card-title">${sub.name}</h5>
+        <p class="card-text mb-1"><strong>Email:</strong> ${sub.email}</p>
+        <p class="card-text mb-1"><strong>Age/Level:</strong> ${sub.age}</p>
+        <p class="card-text mb-1"><strong>Affiliation:</strong> ${sub.address}</p>
+        <p class="card-text mb-2"><strong>Phone:</strong> ${sub.phone || "N/A"}</p>
+        <button class="btn btn-warning btn-sm me-2" onclick="editSubscriber(${index})">Edit</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteSubscriber(${index})">Delete</button>
+      </div>
+    `;
+    subscriberList.appendChild(card);
+  });
+}
+
+form.addEventListener("submit", function (e) {
   e.preventDefault();
 
   const newSub = {
-    name: document.getElementById("name").value,
-    email: document.getElementById("email").value,
-    age: document.getElementById("age").value,
-    address: document.getElementById("address").value,
-    phone: document.getElementById("phone").value
+    name: document.getElementById("name").value.trim(),
+    email: document.getElementById("email").value.trim(),
+    age: document.getElementById("age").value.trim(),
+    address: document.getElementById("address").value.trim(),
+    phone: document.getElementById("phone").value.trim()
   };
 
-  subscribers.push(newSub);
+  if (!newSub.name || !newSub.email || !newSub.age || !newSub.address) {
+    showMessage("Please fill in all required fields.", "danger");
+    return;
+  }
+
+  if (editIndex === -1) {
+    subscribers.push(newSub);
+    showMessage("Subscriber added successfully.", "success");
+  } else {
+    subscribers[editIndex] = newSub;
+    editIndex = -1;
+    showMessage("Subscriber updated successfully.", "success");
+  }
+
   localStorage.setItem("subscribers", JSON.stringify(subscribers));
   displaySubscribers();
   form.reset();
@@ -46,17 +73,15 @@ function editSubscriber(index) {
   document.getElementById("address").value = sub.address;
   document.getElementById("phone").value = sub.phone;
 
-  subscribers.splice(index, 1);
-  localStorage.setItem("subscribers", JSON.stringify(subscribers));
-  displaySubscribers();
+  editIndex = index;
+  showMessage("Editing subscriber. Update the form and click Subscribe.", "info");
 }
 
 function deleteSubscriber(index) {
   subscribers.splice(index, 1);
   localStorage.setItem("subscribers", JSON.stringify(subscribers));
   displaySubscribers();
+  showMessage("Subscriber deleted successfully.", "success");
 }
 
-
 displaySubscribers();
-
