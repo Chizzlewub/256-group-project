@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sports Daily</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+</head>
+<body class="bg-white">
+
+<nav class="navbar navbar-expand navbar-light border-bottom px-3">
+  <a class="navbar-brand fw-bold" href="home-page.html">Sports Daily</a>
+  <div class="navbar-nav">
+    <a class="nav-link fw-bold active" href="home-page.html">Home</a>
+    <a class="nav-link" href="articles.html">Article Catalog</a>
+    <a class="nav-link" href="subscriber.html">Subscribe</a>
+  </div>
+</nav>
+
+<div class="bg-light border-bottom py-4 px-3">
+  <h1 class="h3 fw-bold">The Latest in Sports, Every Single Day</h1>
+  <p class="text-muted">Coverage of the biggest stories in sports</p>
+  <a href="articles.html" class="btn btn-dark me-2">Browse Articles</a>
+  <a href="subscriber.html" class="btn btn-outline-dark">Subscribe Now</a>
+</div>
+
+<div class="row g-0 border-bottom text-center">
+  <div class="col border-end py-3">
+    <div class="fs-4 fw-bold" id="stat-articles">0</div>
+    <div class="text-muted small text-uppercase">Articles</div>
+  </div>
+  <div class="col border-end py-3">
+    <div class="fs-4 fw-bold" id="stat-sports">0</div>
+    <div class="text-muted small text-uppercase">Sports</div>
+  </div>
+  <div class="col border-end py-3">
+    <div class="fs-4 fw-bold" id="stat-authors">0</div>
+    <div class="text-muted small text-uppercase">Authors</div>
+  </div>
+</div>
+
+<div class="container-fluid px-3 py-4">
+  <div class="row g-4">
+
+    <div class="col-md-8">
+      <p class="text-uppercase text-muted small mb-3" style="letter-spacing:2px">Featured Articles</p>
+      <div id="article-list"><p class="text-muted">Loading articles...</p></div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card mb-3">
+        <div class="card-body">
+          <h6 class="text-uppercase fw-bold mb-2">Manage Articles</h6>
+          <ul class="list-unstyled small text-muted mb-3">
+            <li>Add new articles to the catalog</li>
+            <li>Search &amp; filter by sport</li>
+            <li>Edit or delete entries</li>
+            <li>Fully stored locally</li>
+          </ul>
+          <a href="articles.html" class="btn btn-dark btn-sm w-100">Open Article Catalog</a>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-body">
+          <h6 class="text-uppercase fw-bold mb-2">Subscribe</h6>
+          <ul class="list-unstyled small text-muted mb-3">
+            <li>Get premium content access</li>
+            <li>Subscriber-only articles</li>
+            <li>Manage your subscription</li>
+          </ul>
+          <a href="subscriber.html" class="btn btn-dark btn-sm w-100">Subscribe Now</a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  const DEFAULT_ARTICLES = [
+   
+  ];
+
+  function loadArticles() {
+    const saved = localStorage.getItem('sd_articles');
+    if (saved) return JSON.parse(saved);
+    localStorage.setItem('sd_articles', JSON.stringify(DEFAULT_ARTICLES));
+    return DEFAULT_ARTICLES;
+  }
+
+  function render() {
+    const articles = loadArticles();
+    const sports   = new Set(articles.map(a => a.sport));
+    const authors  = new Set(articles.map(a => a.author).filter(Boolean));
+
+    document.getElementById('stat-articles').textContent = articles.length;
+    document.getElementById('stat-sports').textContent   = sports.size;
+    document.getElementById('stat-authors').textContent  = authors.size;
+
+    document.getElementById('article-list').innerHTML = articles.length
+      ? articles.map(a => `
+          <div class="border-bottom pb-3 mb-3">
+            <span class="badge bg-dark me-1">${a.sport}</span>
+            <span class="badge bg-secondary">${a.access}</span>
+            <h6 class="mt-2 mb-1 fw-bold">${a.title}</h6>
+            <p class="small text-muted mb-1">${a.description || ''}</p>
+            <span class="small text-muted">By ${a.author || 'Unknown'} &bull; ${a.access}</span>
+          </div>`).join('')
+      : '<p class="text-muted">No articles yet.</p>';
+  }
+
+  render();
+</script>
+</body>
+</html>

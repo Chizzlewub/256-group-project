@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Article Catalog — Sports Daily</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+</head>
+<body class="bg-white">
+
+<nav class="navbar navbar-expand navbar-light border-bottom px-3">
+  <a class="navbar-brand fw-bold" href="home-page.html">Sports Daily</a>
+  <div class="navbar-nav">
+    <a class="nav-link" href="home-page.html">Home</a>
+    <a class="nav-link fw-bold active" href="articles.html">Article Catalog</a>
+    <a class="nav-link" href="subscriber.html">Subscribe</a>
+  </div>
+</nav>
+
+<div class="bg-light border-bottom py-3 px-3">
+  <h2 class="h4 fw-bold mb-1">Article Catalog</h2>
+  <p class="text-muted small mb-0">Add, search, edit, and manage all Sports Daily articles</p>
+</div>
+
+<div class="container-fluid px-3 py-4">
+  <div class="row g-4">
+
+    <div class="col-md-4 col-lg-3">
+      <div class="card">
+        <div class="card-body">
+          <h6 class="text-uppercase fw-bold mb-3" id="form-title">Add New Article</h6>
+
+          <div class="mb-2">
+            <label class="form-label small fw-bold text-uppercase">Article ID</label>
+            <input type="text" id="f-id" class="form-control form-control-sm bg-light" placeholder="Auto-generated on submit" readonly />
+          </div>
+          <div class="mb-2">
+            <label class="form-label small fw-bold text-uppercase">Article Title <span class="text-danger">*</span></label>
+            <input type="text" id="f-title" class="form-control form-control-sm" placeholder="Title of the article" />
+            <div class="invalid-feedback" id="f-title-err"></div>
+          </div>
+          <div class="mb-2">
+            <label class="form-label small fw-bold text-uppercase">Sport / Category <span class="text-danger">*</span></label>
+            <select id="f-sport" class="form-select form-select-sm">
+              <option value="">— Select a sport —</option>
+              <option>Basketball</option>
+              <option>Football</option>
+              <option>Tennis</option>
+              <option>Soccer</option>
+              <option>Baseball</option>
+              <option>Other</option>
+            </select>
+            <div class="invalid-feedback" id="f-sport-err"></div>
+          </div>
+          <div class="mb-2">
+            <label class="form-label small fw-bold text-uppercase">Word Count <span class="text-danger">*</span></label>
+            <input type="number" id="f-words" class="form-control form-control-sm" placeholder="ex. 800" />
+            <div class="invalid-feedback" id="f-words-err"></div>
+          </div>
+          <div class="mb-2">
+            <label class="form-label small fw-bold text-uppercase">Access Level <span class="text-danger">*</span></label>
+            <select id="f-access" class="form-select form-select-sm">
+              <option value="">— Select access level —</option>
+              <option>Free</option>
+              <option>Subscribers Only</option>
+            </select>
+            <div class="invalid-feedback" id="f-access-err"></div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-bold text-uppercase">Author <span class="text-muted fw-normal">(optional)</span></label>
+            <input type="text" id="f-author" class="form-control form-control-sm" placeholder="e.g. John Smith" />
+            <div class="invalid-feedback" id="f-author-err"></div>
+          </div>
+
+          <button class="btn btn-dark btn-sm w-100 mb-2" id="btn-submit" onclick="submitForm()">Add Article</button>
+          <button class="btn btn-outline-secondary btn-sm w-100" id="btn-cancel" style="display:none" onclick="cancelEdit()">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-8 col-lg-9">
+      <div class="d-flex gap-2 align-items-center mb-3">
+        <input type="text" id="search" class="form-control form-control-sm" placeholder="Search by title or sport..." oninput="renderList()" />
+        <select id="filter-sport" class="form-select form-select-sm" style="width:160px;flex-shrink:0" onchange="renderList()">
+          <option value="">All Sports</option>
+          <option>Basketball</option>
+          <option>Football</option>
+          <option>Tennis</option>
+          <option>Soccer</option>
+          <option>Baseball</option>
+          <option>Other</option>
+        </select>
+        <span class="text-muted small text-nowrap" id="count"></span>
+      </div>
+      <div id="article-list"></div>
+    </div>
+
+  </div>
+</div>
+
+<script src="articles.js"></script>
+</body>
+</html>

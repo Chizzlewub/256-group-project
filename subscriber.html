@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Subscribe — Sports Daily</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+</head>
+<body class="bg-white">
+
+<nav class="navbar navbar-expand navbar-light border-bottom px-3">
+  <a class="navbar-brand fw-bold" href="home-page.html">Sports Daily</a>
+  <div class="navbar-nav">
+    <a class="nav-link" href="home-page.html">Home</a>
+    <a class="nav-link" href="articles.html">Article Catalog</a>
+    <a class="nav-link fw-bold active" href="subscriber.html">Subscribe</a>
+  </div>
+</nav>
+
+<div class="bg-light border-bottom py-3 px-3">
+  <h2 class="h4 fw-bold mb-1">Magazine Subscriber Registrar</h2>
+  <p class="text-muted small mb-0">Join our community and get access to exclusive content</p>
+</div>
+
+<div class="container-fluid px-3 py-4">
+  <div class="row g-4">
+
+    <div class="col-md-5 col-lg-4">
+      <div class="card">
+        <div class="card-body">
+          <h6 class="text-uppercase fw-bold mb-3" id="form-title">New Subscriber</h6>
+
+          <div class="mb-2">
+            <label class="form-label small fw-bold text-uppercase">Full Name <span class="text-danger">*</span></label>
+            <input type="text" id="f-name" class="form-control form-control-sm" placeholder="Your full name" />
+            <div class="invalid-feedback" id="f-name-err"></div>
+          </div>
+          <div class="mb-2">
+            <label class="form-label small fw-bold text-uppercase">Email Address <span class="text-danger">*</span></label>
+            <input type="email" id="f-email" class="form-control form-control-sm" placeholder="you@example.com" />
+            <div class="invalid-feedback" id="f-email-err"></div>
+          </div>
+          <div class="mb-2">
+            <label class="form-label small fw-bold text-uppercase">Age <span class="text-danger">*</span></label>
+            <input type="number" id="f-age" class="form-control form-control-sm" placeholder="e.g. 25" />
+            <div class="invalid-feedback" id="f-age-err"></div>
+          </div>
+          <div class="mb-2">
+            <label class="form-label small fw-bold text-uppercase">Street Address <span class="text-danger">*</span></label>
+            <input type="text" id="f-address" class="form-control form-control-sm" placeholder="123 Main St" />
+            <div class="invalid-feedback" id="f-address-err"></div>
+          </div>
+          <div class="mb-2">
+            <label class="form-label small fw-bold text-uppercase">Phone Number <span class="text-muted fw-normal">(optional)</span></label>
+            <input type="tel" id="f-phone" class="form-control form-control-sm" placeholder="Optional" />
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-bold text-uppercase">Favorite Sport</label>
+            <select id="f-sport" class="form-select form-select-sm">
+              <option value="">— Select a sport —</option>
+              <option>Basketball</option>
+              <option>Football</option>
+              <option>Tennis</option>
+              <option>Soccer</option>
+              <option>Baseball</option>
+              <option>Other</option>
+            </select>
+          </div>
+
+          <div class="alert alert-success py-2 small" id="form-success" style="display:none">Subscriber saved successfully!</div>
+
+          <button class="btn btn-dark btn-sm w-100 mb-2" id="btn-submit" onclick="submitForm()">Add Subscriber</button>
+          <button class="btn btn-outline-secondary btn-sm w-100" id="btn-cancel" style="display:none" onclick="cancelEdit()">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-7 col-lg-8">
+      <h6 class="text-uppercase fw-bold mb-1">Subscribers</h6>
+      <p class="text-muted small mb-3" id="sub-count"></p>
+      <div id="subscriber-list"></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  let editId = null;
+
+
+  function getSubs() {
+    return JSON.parse(localStorage.getItem('sd_subscribers') || '[]');
+  }
+
+  function saveSubs(arr) {
+    localStorage.setItem('sd_subscribers', JSON.stringify(arr));
+  }
+
+
+  function getFormValues() {
+    return {
+      name:    document.getElementById('f-name').value.trim(),
+      email:   document.getElementById('f-email').value.trim(),
+      age:     document.getElementById('f-age').value.trim(),
+      address: document.getElementById('f-address').value.trim(),
+      phone:   document.getElementById('f-phone').value.trim(),
+      sport:   document.getElementById('f-sport').value,
+    };
+  }
+
+  function clearForm() {
+    ['f-name', 'f-email', 'f-age', 'f-address', 'f-phone'].forEach(id => {
+      document.getElementById(id).value = '';
+      document.getElementById(id).classList.remove('is-invalid');
+    });
+    document.getElementById('f-sport').value = '';
+  }
+
+  function setFormMode(mode) {
+    const isEdit = mode === 'edit';
+    document.getElementById('form-title').textContent   = isEdit ? 'Edit Subscriber'  : 'New Subscriber';
+    document.getElementById('btn-submit').textContent   = isEdit ? 'Save Changes'     : 'Add Subscriber';
+    document.getElementById('btn-cancel').style.display = isEdit ? 'block'            : 'none';
+  }
+
+  function showFieldError(fieldId, message) {
+    const input = document.getElementById(fieldId);
+    input.classList.add('is-invalid');
+    const err = document.getElementById(fieldId + '-err');
+    if (err) { err.textContent = message; err.style.display = 'block'; }
+  }
+
+  function clearFieldErrors() {
+    ['f-name', 'f-email', 'f-age', 'f-address'].forEach(id => {
+      document.getElementById(id).classList.remove('is-invalid');
+      const err = document.getElementById(id + '-err');
+      if (err) err.style.display = 'none';
+    });
+  }
+
+
+  function submitForm() {
+    const { name, email, age, address, phone, sport } = getFormValues();
+
+    clearFieldErrors();
+    let valid = true;
+    if (!name)                          { showFieldError('f-name',    'Full name is required.');      valid = false; }
+    if (!email || !/\S+@\S+\.\S+/.test(email)) { showFieldError('f-email', 'A valid email is required.'); valid = false; }
+    if (!age)                           { showFieldError('f-age',     'Age is required.');            valid = false; }
+    if (!address)                       { showFieldError('f-address', 'Street address is required.'); valid = false; }
+    if (!valid) return;
+
+    const subs = getSubs();
+
+    if (editId) {
+      const sub = subs.find(s => s.id === editId);
+      if (sub) Object.assign(sub, { name, email, age, address, phone, sport });
+      editId = null;
+      setFormMode('add');
+    } else {
+      subs.push({ id: Date.now(), name, email, age, address, phone, sport, joined: new Date().toLocaleDateString() });
+    }
+
+    saveSubs(subs);
+    clearForm();
+
+    const ok = document.getElementById('form-success');
+    ok.style.display = 'block';
+    setTimeout(() => ok.style.display = 'none', 3000);
+
+    renderList();
+  }
+
+  function editSubscriber(id) {
+    const sub = getSubs().find(s => s.id === id);
+    if (!sub) return;
+
+    document.getElementById('f-name').value    = sub.name;
+    document.getElementById('f-email').value   = sub.email;
+    document.getElementById('f-age').value     = sub.age;
+    document.getElementById('f-address').value = sub.address;
+    document.getElementById('f-phone').value   = sub.phone || '';
+    document.getElementById('f-sport').value   = sub.sport || '';
+
+    editId = id;
+    setFormMode('edit');
+  }
+
+  function cancelEdit() {
+    editId = null;
+    clearForm();
+    setFormMode('add');
+  }
+
+  function deleteSubscriber(id) {
+    if (!confirm('Remove this subscriber?')) return;
+    saveSubs(getSubs().filter(s => s.id !== id));
+    renderList();
+  }
+
+
+  function renderList() {
+    const subs = getSubs();
+    document.getElementById('sub-count').textContent = subs.length + ' subscriber' + (subs.length !== 1 ? 's' : '');
+
+    document.getElementById('subscriber-list').innerHTML = subs.length
+      ? subs.map(s => `
+          <div class="card mb-2">
+            <div class="card-body py-2 d-flex justify-content-between align-items-start">
+              <div>
+                <h6 class="mb-1 fw-bold">${s.name}</h6>
+                <p class="small text-muted mb-1">
+                  ${s.email}
+                  ${s.sport   ? ' &bull; ' + s.sport        : ''}
+                  &bull; Age: ${s.age}
+                  ${s.phone   ? ' &bull; ' + s.phone        : ''}
+                </p>
+                <p class="small text-muted mb-0">${s.address} &bull; Joined: ${s.joined}</p>
+              </div>
+              <div class="d-flex gap-2 ms-3">
+                <button class="btn btn-outline-secondary btn-sm" onclick="editSubscriber(${s.id})">Edit</button>
+                <button class="btn btn-outline-danger btn-sm"    onclick="deleteSubscriber(${s.id})">Remove</button>
+              </div>
+            </div>
+          </div>`).join('')
+      : '<p class="text-muted border p-3 text-center">No subscribers yet. Use the form to add one.</p>';
+  }
+
+  renderList();
+</script>
+</body>
+</html>
