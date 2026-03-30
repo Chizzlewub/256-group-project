@@ -1,23 +1,57 @@
+let cart = [];
+
 fetch("data/articles.json")
 .then(response => response.json())
 .then(data => {
 
     const container = document.getElementById("articleContainer");
 
-    data.forEach(article => {
-
+    data.forEach((article, index) => {
         const articleDiv = document.createElement("div");
-
         articleDiv.innerHTML = `
             <h2>${article.title}</h2>
             <p><strong>Sport:</strong> ${article.sport}</p>
             <p><strong>Author:</strong> ${article.author}</p>
             <p>${article.summary}</p>
+            <button class="addBtn" data-index="${index}">Add to cart</button>
             <hr>
         `;
 
         container.appendChild(articleDiv);
-
     });
 
+    container.addEventListener("click", function(e) {
+        if (e.target && e.target.classList.contains("addBtn")) {
+            const index = e.target.getAttribute("data-index");
+            cart.push(data[index]);
+            updateCartDisplay();
+        }
+    });
 });
+
+function updateCartDisplay() {
+    const cartContainer = document.getElementById("cart");
+    cartContainer.innerHTML = "";
+
+    cart.forEach((item, index) => {
+        const cartItemDiv = document.createElement("div");
+        ItemDiv.innerHTML = `
+            ${item.title} - ${item.sport}
+            <button class="removeBtn" data-index="${index}">Remove</button>
+        `;
+        cartContainer.appendChild(ItemDiv);
+    });
+
+    cartContainer.addEventListener("click", function(e) {
+
+});
+
+const removeButtons = document.querySelectorAll(".removeBtn");
+        removeButtons.forEach(button => {
+            button.addEventListener("click", () => {
+                const index = button.getAttribute("data-index");
+                cart.splice(index, 1);
+                updateCartDisplay();
+            });
+        });
+};
