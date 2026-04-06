@@ -1,124 +1,75 @@
-let editId = null;
+const app = angular.module("magApp", []);
 
+app.controller("ArticleCtrl", function ($scope, $http) {
 
-function getArticles() {
-  return JSON.parse(localStorage.getItem('sd_articles') || '[]');
-}
-
-function saveArticles(arr) {
-  localStorage.setItem('sd_articles', JSON.stringify(arr));
-}
-
-
-
-function nextId() {
-  const articles = getArticles();
-  if (!articles.length) return 'ART-001';
-  const highest = Math.max(...articles.map(a => parseInt(a.id.replace('ART-', ''))));
-  return 'ART-' + String(highest + 1).padStart(3, '0');
-}
-
-
-function getFormValues() {
-  return {
-    title:  document.getElementById('f-title').value.trim(),
-    sport:  document.getElementById('f-sport').value,
-    words:  document.getElementById('f-words').value,
-    access: document.getElementById('f-access').value,
-    author: document.getElementById('f-author').value.trim(),
+  $scope.article = {
+    publication: {}
   };
-}
 
-function clearForm() {
-  ['f-id', 'f-title', 'f-sport', 'f-words', 'f-access', 'f-author']
-    .forEach(id => document.getElementById(id).value = '');
-}
-
-function setFormMode(mode) {
-  const isEdit = mode === 'edit';
-  document.getElementById('form-title').textContent        = isEdit ? 'Edit Article'   : 'Add New Article';
-  document.getElementById('btn-submit').textContent        = isEdit ? 'Save Changes'   : 'Add Article';
-  document.getElementById('btn-cancel').style.display      = isEdit ? 'block'          : 'none';
-}
-
-
-function submitForm() {
-  const { title, sport, words, access, author } = getFormValues();
-
-  if (!title)                    return alert('Title is required.');
-  if (!sport)                    return alert('Please select a sport.');
-  if (!words || isNaN(words))    return alert('Enter a valid word count.');
-  if (!access)                   return alert('Select an access level.');
-
-  const articles = getArticles();
-
-  if (editId) {
-    const article = articles.find(a => a.id === editId);
-    if (article) Object.assign(article, { title, sport, words: parseInt(words), access, author });
-    editId = null;
-    setFormMode('add');
-  } else {
-    articles.push({ id: nextId(), title, sport, words: parseInt(words), access, author, description: '' });
+  function getStoredArticles() {
+    return JSON.parse(localStorage.getItem("sd_articles") || "[]");
   }
 
-  saveArticles(articles);
-  clearForm();
-  renderList();
-}
+  function saveArticles(arr) {
+    localStorage.setItem("sd_articles", JSON.stringify(arr));
+  }
 
-function editArticle(id) {
-  const article = getArticles().find(a => a.id === id);
-  if (!article) return;
+  function nextId(articles) {
+    if (!articles.length) return "ART-001";
+    const max = Math.max(...articles.map(a =>
+      parseInt(a.id.replace("ART-", ""))
+    ));
+    return "ART-" + String(max + 1).padStart(3, "0");
+  }
 
-  document.getElementById('f-id').value     = article.id;
-  document.getElementById('f-title').value  = article.title;
-  document.getElementById('f-sport').value  = article.sport;
-  document.getElementById('f-words').value  = article.words;
-  document.getElementById('f-access').value = article.access;
-  document.getElementById('f-author').value = article.author;
-
-  editId = id;
-  setFormMode('edit');
-}
-
-function cancelEdit() {
-  editId = null;
-  clearForm();
-  setFormMode('add');
-}
-
-function deleteArticle(id) {
-  if (!confirm('Delete this article?')) return;
-  saveArticles(getArticles().filter(a => a.id !== id));
-  renderList();
-}
+  $scope.submit = function () {
 
 
-function renderList() {
-  const search      = document.getElementById('search').value.toLowerCase();
-  const sportFilter = document.getElementById('filter-sport').value;
+    if (!$scope.article.title ||
+        !$scope.article.sport ||
+        !$scope.article.words ||
+        !$scope.article.access ||
+        !$scope.article.publication.date ||
+        !$scope.article.publication.status ||
+        !($scope.article.publication.web || $scope.article.publication.mobile)) {
+      alert("Please complete all required fields.");
+      return;
+    }
 
-  const filtered = getArticles().filter(a =>
-    (a.title.toLowerCase().includes(search) || a.sport.toLowerCase().includes(search)) &&
-    (!sportFilter || a.sport === sportFilter)
-  );
+    const channels = [];
+    if ($scope.article.publication.web) channels.push("Web");
+    if ($scope.article.publication.mobile) channels.push("Mobile");
 
-  document.getElementById('count').textContent =
-    filtered.length + ' article' + (filtered.length !== 1 ? 's' : '');
+    const articles = getStoredArticles();
 
-  document.getElementById('article-list').innerHTML = filtered.length
-    ? filtered.map(a => `
-        <div class="card mb-2">
-          <div class="card-body">
-            <span class="badge bg-dark">${a.sport}</span>
-            <span class="badge bg-secondary">${a.access}</span>
-            <h6 class="mt-2">${a.title}</h6>
-            <p class="small text-muted">${a.author ? a.author + ' • ' : ''}${a.words} words</p>
-            <button class="btn btn-outline-secondary btn-sm" onclick="editArticle('${a.id}')">Edit</button>
-            <button class="btn btn-outline-danger btn-sm"    onclick="deleteArticle('${a.id}')">Delete</button>
-          </div>
-        </div>`).join('')
-    : '<p class="text-muted">No articles found.</p>';
-}
+    const newArticle = {
+      id: nextId(articles),
+      title: $scope.article.title,
+      sport: $scope.article.sport,
+      words: parseInt($scope.article.words),
+      access: $scope.article.access,
+      author: $scope.article.author || "",
+      publication: {
+        date: $scope.article.publication.date,
+        channels,
+        status: $scope.article.publication.status,
+        notes: $scope.article.publication.notes || ""
+      }
+    };
 
-init();
+    // Save locally
+    articles.push(newArticle);
+    saveArticles(articles);
+
+    // AJAX REST call
+    $http.post("https://jsonplaceholder.typicode.com/posts", newArticle)
+      .then(res => console.log("Sent to API:", res.data))
+      .catch(err => console.error(err));
+
+    // Reset form
+    $scope.article = { publication: {} };
+
+    alert("Article added successfully!");
+  };
+
+});
