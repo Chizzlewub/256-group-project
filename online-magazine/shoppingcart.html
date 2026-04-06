@@ -6,6 +6,7 @@
   <title>Sports Daily — Store</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
   <link href="css/style.css" rel="stylesheet" />
+  <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
 </head>
 <body class="bg-white">
 
@@ -20,17 +21,28 @@
 </nav>
 
 <div class="bg-light border-bottom py-4 px-3 mb-4">
-  <h1 class="h3 fw-bold">Sports articles and merch</h1>
+  <h1 class="h3 fw-bold">Sports Articles & Merch</h1>
   <p class="text-muted mb-2">Browse products and add them to your shopping cart</p>
   <input type="text" id="search" class="form-control" placeholder="Search products by name or category...">
 </div>
 
 <div class="container-fluid px-3">
-  <div class="row" id="product-list">
-    <p class="text-muted">Loading products...</p>
+  <div class="row">
+    <div class="col-md-8">
+      <div class="row" id="product-list">
+        <p class="text-muted">Loading products...</p>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="mt-4">
+        <h5>Shopping Cart (<span id="cart-count">0</span> items)</h5>
+        <div id="cart-summary" class="border p-2 mb-2"></div>
+        <div class="fw-bold">Total: <span id="cart-total">$0.00</span></div>
+      </div>
+    </div>
   </div>
 </div>
 
-<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script src="shoppingcart.js"></script>
 </body>
 </html>
