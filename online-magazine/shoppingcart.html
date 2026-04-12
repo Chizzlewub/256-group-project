@@ -2,47 +2,27 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Sports Daily — Store</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+
+  <!-- Bootstrap -->
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  />
+
   <link href="css/style.css" rel="stylesheet" />
-  <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+
+  <!-- React (CDN, no build tools) -->
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
 </head>
+
 <body class="bg-white">
+  <!-- React mounts here -->
+  <div id="root"></div>
 
-<nav class="navbar navbar-expand navbar-light border-bottom px-3">
-  <a class="navbar-brand fw-bold" href="home-page.html">Sports Daily</a>
-  <div class="navbar-nav">
-    <a class="nav-link" href="home-page.html">Home</a>
-    <a class="nav-link" href="articles.html">Article Catalog</a>
-    <a class="nav-link" href="subscriber.html">Subscribe</a>
-    <a class="nav-link fw-bold active" href="shoppingcart.html">Store</a>
-  </div>
-</nav>
-
-<div class="bg-light border-bottom py-4 px-3 mb-4">
-  <h1 class="h3 fw-bold">Sports Articles & Merch</h1>
-  <p class="text-muted mb-2">Browse products and add them to your shopping cart</p>
-  <input type="text" id="search" class="form-control" placeholder="Search products by name or category...">
-</div>
-
-<div class="container-fluid px-3">
-  <div class="row">
-    <div class="col-md-8">
-      <div class="row" id="product-list">
-        <p class="text-muted">Loading products...</p>
-      </div>
-    </div>
-    <div class="col-md-4">
-      <div class="mt-4">
-        <h5>Shopping Cart (<span id="cart-count">0</span> items)</h5>
-        <div id="cart-summary" class="border p-2 mb-2"></div>
-        <div class="fw-bold">Total: <span id="cart-total">$0.00</span></div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<script src="shoppingcart.js"></script>
+  <!-- Page logic -->
+  <script src="shoppingcart.js"></script>
 </body>
 </html>

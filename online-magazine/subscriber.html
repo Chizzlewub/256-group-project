@@ -4,230 +4,260 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Subscribe — Sports Daily</title>
+
+  <!-- Bootstrap -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+
+  <!-- React (CDN, no build tools) -->
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
 </head>
+
 <body class="bg-white">
+  <div id="root"></div>
 
-<nav class="navbar navbar-expand navbar-light border-bottom px-3">
-  <a class="navbar-brand fw-bold" href="home-page.html">Sports Daily</a>
-  <div class="navbar-nav">
-    <a class="nav-link" href="home-page.html">Home</a>
-    <a class="nav-link" href="articles.html">Article Catalog</a>
-    <a class="nav-link fw-bold active" href="subscriber.html">Subscribe</a>
-    <a class="nav-link" href="shoppingcart.html">Store</a>
-  </div>
-</nav>
+  <script>
+    const { useState, useEffect } = React;
 
-<div class="bg-light border-bottom py-3 px-3">
-  <h2 class="h4 fw-bold mb-1">Magazine Subscriber Registrar</h2>
-  <p class="text-muted small mb-0">Join our community and get access to exclusive content</p>
-</div>
+    function SubscriberApp() {
+      const emptyForm = {
+        name: "",
+        email: "",
+        age: "",
+        address: "",
+        phone: "",
+        sport: ""
+      };
 
-<div class="container-fluid px-3 py-4">
-  <div class="row g-4">
+      const [form, setForm] = useState(emptyForm);
+      const [subs, setSubs] = useState(
+        JSON.parse(localStorage.getItem("sd_subscribers") || "[]")
+      );
+      const [editId, setEditId] = useState(null);
+      const [errors, setErrors] = useState({});
+      const [success, setSuccess] = useState(false);
 
-    <div class="col-md-5 col-lg-4">
-      <div class="card">
-        <div class="card-body">
-          <h6 class="text-uppercase fw-bold mb-3" id="form-title">New Subscriber</h6>
+      useEffect(() => {
+        localStorage.setItem("sd_subscribers", JSON.stringify(subs));
+      }, [subs]);
 
-          <div class="mb-2">
-            <label class="form-label small fw-bold text-uppercase">Full Name <span class="text-danger">*</span></label>
-            <input type="text" id="f-name" class="form-control form-control-sm" placeholder="Your full name" />
-            <div class="invalid-feedback" id="f-name-err"></div>
-          </div>
-          <div class="mb-2">
-            <label class="form-label small fw-bold text-uppercase">Email Address <span class="text-danger">*</span></label>
-            <input type="email" id="f-email" class="form-control form-control-sm" placeholder="you@example.com" />
-            <div class="invalid-feedback" id="f-email-err"></div>
-          </div>
-          <div class="mb-2">
-            <label class="form-label small fw-bold text-uppercase">Age <span class="text-danger">*</span></label>
-            <input type="number" id="f-age" class="form-control form-control-sm" placeholder="e.g. 25" />
-            <div class="invalid-feedback" id="f-age-err"></div>
-          </div>
-          <div class="mb-2">
-            <label class="form-label small fw-bold text-uppercase">Street Address <span class="text-danger">*</span></label>
-            <input type="text" id="f-address" class="form-control form-control-sm" placeholder="123 Main St" />
-            <div class="invalid-feedback" id="f-address-err"></div>
-          </div>
-          <div class="mb-2">
-            <label class="form-label small fw-bold text-uppercase">Phone Number <span class="text-muted fw-normal">(optional)</span></label>
-            <input type="tel" id="f-phone" class="form-control form-control-sm" placeholder="Optional" />
-          </div>
-          <div class="mb-3">
-            <label class="form-label small fw-bold text-uppercase">Favorite Sport</label>
-            <select id="f-sport" class="form-select form-select-sm">
-              <option value="">— Select a sport —</option>
-              <option>Basketball</option>
-              <option>Football</option>
-              <option>Tennis</option>
-              <option>Soccer</option>
-              <option>Baseball</option>
-              <option>Other</option>
-            </select>
-          </div>
+      function validate() {
+        const e = {};
+        if (!form.name) e.name = "Full name is required.";
+        if (!/\S+@\S+\.\S+/.test(form.email)) e.email = "Valid email required.";
+        if (!form.age) e.age = "Age is required.";
+        if (!form.address) e.address = "Street address required.";
+        setErrors(e);
+        return Object.keys(e).length === 0;
+      }
 
-          <div class="alert alert-success py-2 small" id="form-success" style="display:none">Subscriber saved successfully!</div>
+      function submit(e) {
+        e.preventDefault();
+        if (!validate()) return;
 
-          <button class="btn btn-dark btn-sm w-100 mb-2" id="btn-submit" onclick="submitForm()">Add Subscriber</button>
-          <button class="btn btn-outline-secondary btn-sm w-100" id="btn-cancel" style="display:none" onclick="cancelEdit()">Cancel</button>
-        </div>
-      </div>
-    </div>
+        if (editId) {
+          setSubs(subs.map(s =>
+            s.id === editId ? { ...s, ...form } : s
+          ));
+          setEditId(null);
+        } else {
+          setSubs([...subs, {
+            id: Date.now(),
+            ...form,
+            joined: new Date().toLocaleDateString()
+          }]);
+        }
 
-    <div class="col-md-7 col-lg-8">
-      <h6 class="text-uppercase fw-bold mb-1">Subscribers</h6>
-      <p class="text-muted small mb-3" id="sub-count"></p>
-      <div id="subscriber-list"></div>
-    </div>
+        setForm(emptyForm);
+        setErrors({});
+        setSuccess(true);
+        setTimeout(() => setSuccess(false), 3000);
+      }
 
-  </div>
-</div>
+      function edit(sub) {
+        setForm(sub);
+        setEditId(sub.id);
+      }
 
-<script>
-  let editId = null;
+      function remove(id) {
+        if (!confirm("Remove this subscriber?")) return;
+        setSubs(subs.filter(s => s.id !== id));
+      }
 
+      return React.createElement(
+        "div",
+        null,
 
-  function getSubs() {
-    return JSON.parse(localStorage.getItem('sd_subscribers') || '[]');
-  }
+        /* NAVBAR */
+        React.createElement(
+          "nav",
+          { className: "navbar navbar-expand navbar-light border-bottom px-3" },
+          React.createElement("a", { className: "navbar-brand fw-bold", href: "home-page.html" }, "Sports Daily"),
+          React.createElement(
+            "div",
+            { className: "navbar-nav" },
+            nav("Home", "home-page.html"),
+            nav("Article Catalog", "articles.html"),
+            nav("Subscribe", "subscriber.html", true),
+            nav("Store", "shoppingcart.html")
+          )
+        ),
 
-  function saveSubs(arr) {
-    localStorage.setItem('sd_subscribers', JSON.stringify(arr));
-  }
+        /* HEADER */
+        React.createElement(
+          "div",
+          { className: "bg-light border-bottom py-3 px-3" },
+          React.createElement("h2", { className: "h4 fw-bold mb-1" }, "Magazine Subscriber Registrar"),
+          React.createElement("p", { className: "text-muted small mb-0" }, "Join our community and get access to exclusive content")
+        ),
 
+        /* CONTENT */
+        React.createElement(
+          "div",
+          { className: "container-fluid px-3 py-4" },
+          React.createElement(
+            "div",
+            { className: "row g-4" },
 
-  function getFormValues() {
-    return {
-      name:    document.getElementById('f-name').value.trim(),
-      email:   document.getElementById('f-email').value.trim(),
-      age:     document.getElementById('f-age').value.trim(),
-      address: document.getElementById('f-address').value.trim(),
-      phone:   document.getElementById('f-phone').value.trim(),
-      sport:   document.getElementById('f-sport').value,
-    };
-  }
+            /* FORM */
+            React.createElement(
+              "div",
+              { className: "col-md-5 col-lg-4" },
+              React.createElement(
+                "div",
+                { className: "card" },
+                React.createElement(
+                  "form",
+                  { className: "card-body", onSubmit: submit },
+                  React.createElement("h6", { className: "text-uppercase fw-bold mb-3" },
+                    editId ? "Edit Subscriber" : "New Subscriber"
+                  ),
 
-  function clearForm() {
-    ['f-name', 'f-email', 'f-age', 'f-address', 'f-phone'].forEach(id => {
-      document.getElementById(id).value = '';
-      document.getElementById(id).classList.remove('is-invalid');
-    });
-    document.getElementById('f-sport').value = '';
-  }
+                  field("Full Name *", "name"),
+                  error(errors.name),
+                  field("Email *", "email", "email"),
+                  error(errors.email),
+                  field("Age *", "age", "number"),
+                  error(errors.age),
+                  field("Street Address *", "address"),
+                  error(errors.address),
+                  field("Phone (optional)", "phone"),
+                  selectSport(),
 
-  function setFormMode(mode) {
-    const isEdit = mode === 'edit';
-    document.getElementById('form-title').textContent   = isEdit ? 'Edit Subscriber'  : 'New Subscriber';
-    document.getElementById('btn-submit').textContent   = isEdit ? 'Save Changes'     : 'Add Subscriber';
-    document.getElementById('btn-cancel').style.display = isEdit ? 'block'            : 'none';
-  }
+                  success && React.createElement(
+                    "div",
+                    { className: "alert alert-success py-2 small" },
+                    "Subscriber saved successfully!"
+                  ),
 
-  function showFieldError(fieldId, message) {
-    const input = document.getElementById(fieldId);
-    input.classList.add('is-invalid');
-    const err = document.getElementById(fieldId + '-err');
-    if (err) { err.textContent = message; err.style.display = 'block'; }
-  }
+                  React.createElement("button", { className: "btn btn-dark btn-sm w-100 mb-2", type: "submit" },
+                    editId ? "Save Changes" : "Add Subscriber"
+                  ),
 
-  function clearFieldErrors() {
-    ['f-name', 'f-email', 'f-age', 'f-address'].forEach(id => {
-      document.getElementById(id).classList.remove('is-invalid');
-      const err = document.getElementById(id + '-err');
-      if (err) err.style.display = 'none';
-    });
-  }
+                  editId && React.createElement(
+                    "button",
+                    {
+                      type: "button",
+                      className: "btn btn-outline-secondary btn-sm w-100",
+                      onClick: () => { setEditId(null); setForm(emptyForm); }
+                    },
+                    "Cancel"
+                  )
+                )
+              )
+            ),
 
+            /* LIST */
+            React.createElement(
+              "div",
+              { className: "col-md-7 col-lg-8" },
+              React.createElement("h6", { className: "text-uppercase fw-bold mb-1" }, "Subscribers"),
+              React.createElement("p", { className: "text-muted small mb-3" },
+                subs.length + " subscriber" + (subs.length !== 1 ? "s" : "")
+              ),
+              subs.length
+                ? subs.map(s =>
+                    React.createElement(
+                      "div",
+                      { key: s.id, className: "card mb-2" },
+                      React.createElement(
+                        "div",
+                        { className: "card-body py-2 d-flex justify-content-between" },
+                        React.createElement(
+                          "div",
+                          null,
+                          React.createElement("h6", { className: "fw-bold mb-1" }, s.name),
+                          React.createElement(
+                            "p",
+                            { className: "small text-muted mb-0" },
+                            s.email, " • Age: ", s.age, s.sport ? " • " + s.sport : ""
+                          ),
+                          React.createElement(
+                            "p",
+                            { className: "small text-muted mb-0" },
+                            s.address, " • Joined: ", s.joined
+                          )
+                        ),
+                        React.createElement(
+                          "div",
+                          { className: "d-flex gap-2" },
+                          React.createElement("button", { className: "btn btn-outline-secondary btn-sm", onClick: () => edit(s) }, "Edit"),
+                          React.createElement("button", { className: "btn btn-outline-danger btn-sm", onClick: () => remove(s.id) }, "Remove")
+                        )
+                      )
+                    )
+                  )
+                : React.createElement("p", { className: "text-muted border p-3 text-center" },
+                    "No subscribers yet. Use the form to add one."
+                  )
+            )
+          )
+        )
+      );
 
-  function submitForm() {
-    const { name, email, age, address, phone, sport } = getFormValues();
+      function field(label, key, type = "text") {
+        return React.createElement(
+          "div",
+          { className: "mb-2" },
+          React.createElement("label", { className: "form-label small fw-bold text-uppercase" }, label),
+          React.createElement("input", {
+            type,
+            className: "form-control form-control-sm",
+            value: form[key],
+            onChange: e => setForm({ ...form, [key]: e.target.value })
+          })
+        );
+      }
 
-    clearFieldErrors();
-    let valid = true;
-    if (!name)                          { showFieldError('f-name',    'Full name is required.');      valid = false; }
-    if (!email || !/\S+@\S+\.\S+/.test(email)) { showFieldError('f-email', 'A valid email is required.'); valid = false; }
-    if (!age)                           { showFieldError('f-age',     'Age is required.');            valid = false; }
-    if (!address)                       { showFieldError('f-address', 'Street address is required.'); valid = false; }
-    if (!valid) return;
+      function error(msg) {
+        return msg && React.createElement("div", { className: "invalid-feedback d-block" }, msg);
+      }
 
-    const subs = getSubs();
+      function selectSport() {
+        return React.createElement(
+          "select",
+          {
+            className: "form-select form-select-sm mb-3",
+            value: form.sport,
+            onChange: e => setForm({ ...form, sport: e.target.value })
+          },
+          ["", "Basketball", "Football", "Tennis", "Soccer", "Baseball", "Other"]
+            .map(s => React.createElement("option", { key: s, value: s }, s || "— Select a sport —"))
+        );
+      }
 
-    if (editId) {
-      const sub = subs.find(s => s.id === editId);
-      if (sub) Object.assign(sub, { name, email, age, address, phone, sport });
-      editId = null;
-      setFormMode('add');
-    } else {
-      subs.push({ id: Date.now(), name, email, age, address, phone, sport, joined: new Date().toLocaleDateString() });
+      function nav(label, href, active = false) {
+        return React.createElement(
+          "a",
+          { href, className: "nav-link" + (active ? " fw-bold active" : "") },
+          label
+        );
+      }
     }
 
-    saveSubs(subs);
-    clearForm();
-
-    const ok = document.getElementById('form-success');
-    ok.style.display = 'block';
-    setTimeout(() => ok.style.display = 'none', 3000);
-
-    renderList();
-  }
-
-  function editSubscriber(id) {
-    const sub = getSubs().find(s => s.id === id);
-    if (!sub) return;
-
-    document.getElementById('f-name').value    = sub.name;
-    document.getElementById('f-email').value   = sub.email;
-    document.getElementById('f-age').value     = sub.age;
-    document.getElementById('f-address').value = sub.address;
-    document.getElementById('f-phone').value   = sub.phone || '';
-    document.getElementById('f-sport').value   = sub.sport || '';
-
-    editId = id;
-    setFormMode('edit');
-  }
-
-  function cancelEdit() {
-    editId = null;
-    clearForm();
-    setFormMode('add');
-  }
-
-  function deleteSubscriber(id) {
-    if (!confirm('Remove this subscriber?')) return;
-    saveSubs(getSubs().filter(s => s.id !== id));
-    renderList();
-  }
-
-
-  function renderList() {
-    const subs = getSubs();
-    document.getElementById('sub-count').textContent = subs.length + ' subscriber' + (subs.length !== 1 ? 's' : '');
-
-    document.getElementById('subscriber-list').innerHTML = subs.length
-      ? subs.map(s => `
-          <div class="card mb-2">
-            <div class="card-body py-2 d-flex justify-content-between align-items-start">
-              <div>
-                <h6 class="mb-1 fw-bold">${s.name}</h6>
-                <p class="small text-muted mb-1">
-                  ${s.email}
-                  ${s.sport   ? ' &bull; ' + s.sport        : ''}
-                  &bull; Age: ${s.age}
-                  ${s.phone   ? ' &bull; ' + s.phone        : ''}
-                </p>
-                <p class="small text-muted mb-0">${s.address} &bull; Joined: ${s.joined}</p>
-              </div>
-              <div class="d-flex gap-2 ms-3">
-                <button class="btn btn-outline-secondary btn-sm" onclick="editSubscriber(${s.id})">Edit</button>
-                <button class="btn btn-outline-danger btn-sm"    onclick="deleteSubscriber(${s.id})">Remove</button>
-              </div>
-            </div>
-          </div>`).join('')
-      : '<p class="text-muted border p-3 text-center">No subscribers yet. Use the form to add one.</p>';
-  }
-
-  renderList();
-</script>
+    ReactDOM.createRoot(document.getElementById("root"))
+      .render(React.createElement(SubscriberApp));
+  </script>
 </body>
 </html>
+``
