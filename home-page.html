@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sports Daily</title>
+
+  <!-- Bootstrap -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+
+  <!-- React (CDN, no build tools) -->
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+</head>
+
+<body class="bg-white">
+  <div id="root"></div>
+
+  <script>
+    const { useState, useEffect } = React;
+
+    function HomeApp() {
+      const [articles, setArticles] = useState([]);
+
+      useEffect(() => {
+        const saved = localStorage.getItem("sd_articles");
+        setArticles(saved ? JSON.parse(saved) : []);
+      }, []);
+
+      const sports = new Set(articles.map(a => a.sport));
+      const authors = new Set(articles.map(a => a.author).filter(Boolean));
+
+      return React.createElement(
+        "div",
+        null,
+
+        /* NAVBAR */
+        React.createElement(
+          "nav",
+          { className: "navbar navbar-expand navbar-light border-bottom px-3" },
+          React.createElement(
+            "a",
+            { className: "navbar-brand fw-bold", href: "home-page.html" },
+            "Sports Daily"
+          ),
+          React.createElement(
+            "div",
+            { className: "navbar-nav" },
+            nav("Home", "home-page.html", true),
+            nav("Article Catalog", "articles.html"),
+            nav("Subscribe", "subscriber.html"),
+            nav("Store", "shoppingcart.html")
+          )
+        ),
+
+        /* HERO */
+        React.createElement(
+          "div",
+          { className: "bg-light border-bottom py-4 px-3" },
+          React.createElement(
+            "h1",
+            { className: "h3 fw-bold" },
+            "The Latest in Sports, Every Single Day"
+          ),
+          React.createElement(
+            "p",
+            { className: "text-muted" },
+            "Coverage of the biggest stories in sports"
+          ),
+          React.createElement(
+            "div",
+            null,
+            action("Browse Articles", "articles.html", "btn btn-dark me-2"),
+            action("Subscribe Now", "subscriber.html", "btn btn-outline-dark me-2"),
+            action("Shop", "shoppingcart.html", "btn btn-success")
+          )
+        ),
+
+        /* STATS */
+        React.createElement(
+          "div",
+          { className: "row g-0 border-bottom text-center" },
+          stat(articles.length, "Articles"),
+          stat(sports.size, "Sports"),
+          stat(authors.size, "Authors")
+        ),
+
+        /* CONTENT */
+        React.createElement(
+          "div",
+          { className: "container-fluid px-3 py-4" },
+          React.createElement(
+            "div",
+            { className: "row g-4" },
+
+            /* ARTICLES */
+            React.createElement(
+              "div",
+              { className: "col-md-8" },
+              React.createElement(
+                "p",
+                {
+                  className: "text-uppercase text-muted small mb-3",
+                  style: { letterSpacing: "2px" }
+                },
+                "Featured Articles"
+              ),
+              articles.length
+                ? articles.map(a =>
+                    React.createElement(
+                      "div",
+                      { key: a.id, className: "border-bottom pb-3 mb-3" },
+                      React.createElement(
+                        "span",
+                        { className: "badge bg-dark me-1" },
+                        a.sport
+                      ),
+                      React.createElement(
+                        "span",
+                        { className: "badge bg-secondary" },
+                        a.access
+                      ),
+                      React.createElement(
+                        "h6",
+                        { className: "mt-2 mb-1 fw-bold" },
+                        a.title
+                      ),
+                      React.createElement(
+                        "p",
+                        { className: "small text-muted mb-1" },
+                        a.description || ""
+                      ),
+                      React.createElement(
+                        "span",
+                        { className: "small text-muted" },
+                        "By ",
+                        a.author || "Unknown",
+                        " • ",
+                        a.access
+                      )
+                    )
+                  )
+                : React.createElement(
+                    "p",
+                    { className: "text-muted" },
+                    "No articles yet."
+                  )
+            ),
+
+            /* SIDE CARDS */
+            React.createElement(
+              "div",
+              { className: "col-md-4" },
+              sideCard(
+                "Manage Articles",
+                [
+                  "Add new articles to the catalog",
+                  "Search & filter by sport",
+                  "Edit or delete entries",
+                  "Fully stored locally"
+                ],
+                "articles.html",
+                "Open Article Catalog"
+              ),
+              sideCard(
+                "Subscribe",
+                [
+                  "Get premium content access",
+                  "Subscriber-only articles",
+                  "Manage your subscription"
+                ],
+                "subscriber.html",
+                "Subscribe Now"
+              )
+            )
+          )
+        )
+      );
+    }
+
+    /* HELPERS */
+
+    function nav(label, href, active = false) {
+      return React.createElement(
+        "a",
+        { href, className: "nav-link" + (active ? " fw-bold active" : "") },
+        label
+      );
+    }
+
+    function action(label, href, className) {
+      return React.createElement(
+        "a",
+        { href, className },
+        label
+      );
+    }
+
+    function stat(value, label) {
+      return React.createElement(
+        "div",
+        { className: "col border-end py-3" },
+        React.createElement(
+          "div",
+          { className: "fs-4 fw-bold" },
+          value
+        ),
+        React.createElement(
+          "div",
+          { className: "text-muted small text-uppercase" },
+          label
+        )
+      );
+    }
+
+    function sideCard(title, items, href, btn) {
+      return React.createElement(
+        "div",
+        { className: "card mb-3" },
+        React.createElement(
+          "div",
+          { className: "card-body" },
+          React.createElement(
+            "h6",
+            { className: "text-uppercase fw-bold mb-2" },
+            title
+          ),
+          React.createElement(
+            "ul",
+            { className: "list-unstyled small text-muted mb-3" },
+            items.map(i =>
+              React.createElement("li", { key: i }, i)
+            )
+          ),
+          React.createElement(
+            "a",
+            { href, className: "btn btn-dark btn-sm w-100" },
+            btn
+          )
+        )
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root"))
+      .render(React.createElement(HomeApp));
+  </script>
+</body>
+</html>
+``

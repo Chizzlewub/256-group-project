@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Approval — Sports Daily</title>
+
+  <!-- Bootstrap -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+
+  <!-- React (CDN, no build tools) -->
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+</head>
+
+<body class="bg-white">
+  <div id="root"></div>
+
+  <script>
+    const { useState, useEffect } = React;
+    const API = "http://localhost:3000";
+
+    function ApprovalApp() {
+      const [pending, setPending]     = useState([]);
+      const [loading, setLoading]     = useState(true);
+      const [error, setError]         = useState(null);
+      const [updating, setUpdating]   = useState(null); // id currently being updated
+      const [toast, setToast]         = useState(null); // success message
+
+      useEffect(() => {
+        fetchPending();
+      }, []);
+
+      // AJAX GET — fetch only pending articles
+      function fetchPending() {
+        setLoading(true);
+        fetch(`${API}/articles`)
+          .then(res => {
+            if (!res.ok) throw new Error("Server error");
+            return res.json();
+          })
+          .then(data => {
+            setPending(data.filter(a => a.status === "pending"));
+            setLoading(false);
+          })
+          .catch(() => {
+            setError("Could not load submissions. Is the server running?");
+            setLoading(false);
+          });
+      }
+
+      // AJAX PUT — approve or decline an article
+      function updateStatus(id, status) {
+        setUpdating(id);
+        fetch(`${API}/articles/${id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status })
+        })
+          .then(res => {
+            if (!res.ok) throw new Error("Update failed");
+            return res.json();
+          })
+          .then(() => {
+            // Remove from pending list after decision
+            setPending(prev => prev.filter(a => a.id !== id));
+            showToast(`Article ${status === "approved" ? "approved ✓" : "declined ✗"}`);
+          })
+          .catch(() => {
+            alert("Failed to update. Please try again.");
+          })
+          .finally(() => setUpdating(null));
+      }
+
+      function showToast(msg) {
+        setToast(msg);
+        setTimeout(() => setToast(null), 3000);
+      }
+
+      return React.createElement(
+        "div",
+        null,
+
+        /* NAVBAR */
+        React.createElement(
+          "nav",
+          { className: "navbar navbar-expand navbar-light border-bottom px-3" },
+          React.createElement("a", { className: "navbar-brand fw-bold", href: "home-page.html" }, "Sports Daily"),
+          React.createElement(
+            "div",
+            { className: "navbar-nav" },
+            navLink("Home", "home-page.html"),
+            navLink("Article Catalog", "articles.html"),
+            navLink("Subscribe", "subscriber.html"),
+            navLink("Store", "shoppingcart.html"),
+            navLink("Submission History", "order-history.html"),
+            navLink("Admin Approval", "approval.html", true)
+          )
+        ),
+
+        /* HEADER */
+        React.createElement(
+          "div",
+          { className: "bg-dark text-white py-3 px-3 d-flex justify-content-between align-items-center" },
+          React.createElement(
+            "div",
+            null,
+            React.createElement("h2", { className: "h4 fw-bold mb-1" }, "Admin Approval Dashboard"),
+            React.createElement("p", { className: "mb-0 opacity-75 small" }, "Review and approve or decline pending article submissions")
+          ),
+          React.createElement(
+            "div",
+            { className: "d-flex align-items-center gap-3" },
+            React.createElement(
+              "span",
+              { className: "badge bg-warning text-dark fs-6" },
+              pending.length, " pending"
+            ),
+            React.createElement(
+              "button",
+              { className: "btn btn-outline-light btn-sm", onClick: fetchPending },
+              "↻ Refresh"
+            )
+          )
+        ),
+
+        /* TOAST */
+        toast && React.createElement(
+          "div",
+          {
+            className: "position-fixed top-0 end-0 m-3 alert alert-success shadow",
+            style: { zIndex: 9999 }
+          },
+          toast
+        ),
+
+        /* CONTENT */
+        React.createElement(
+          "div",
+          { className: "container-fluid px-3 py-4" },
+
+          loading && React.createElement("p", { className: "text-muted" }, "Loading pending submissions…"),
+          error   && React.createElement("div", { className: "alert alert-danger" }, error),
+
+          !loading && !error && (
+            pending.length
+              ? React.createElement(
+                  "div",
+                  null,
+                  React.createElement(
+                    "p",
+                    { className: "text-muted small mb-3" },
+                    "Showing ", pending.length, " article", pending.length !== 1 ? "s" : "", " awaiting review."
+                  ),
+                  pending.map(a =>
+                    React.createElement(
+                      "div",
+                      { key: a.id, className: "card mb-3 border-warning border-start border-4" },
+                      React.createElement(
+                        "div",
+                        { className: "card-body" },
+                        React.createElement(
+                          "div",
+                          { className: "d-flex justify-content-between align-items-start flex-wrap gap-2" },
+
+                          /* Article info */
+                          React.createElement(
+                            "div",
+                            null,
+                            React.createElement(
+                              "div",
+                              { className: "d-flex align-items-center gap-2 mb-1" },
+                              React.createElement("span", { className: "text-muted small fw-bold" }, a.id),
+                              React.createElement("span", { className: "badge bg-warning text-dark" }, "PENDING")
+                            ),
+                            React.createElement("h6", { className: "fw-bold mb-1" }, a.title),
+                            React.createElement(
+                              "p",
+                              { className: "small text-muted mb-1" },
+                              "By ", a.author || "Unknown",
+                              " • Sport: ", a.sport,
+                              " • ", a.words, " words",
+                              " • Access: ", a.access
+                            ),
+                            a.publication && React.createElement(
+                              "p",
+                              { className: "small text-muted mb-1" },
+                              "Channels: ", (a.publication.channels || []).join(", "),
+                              " • Review status: ", a.publication.status,
+                              a.publication.notes ? " • Notes: " + a.publication.notes : ""
+                            ),
+                            React.createElement(
+                              "p",
+                              { className: "small text-muted mb-0" },
+                              "Submitted: ", new Date(a.submittedAt).toLocaleString()
+                            )
+                          ),
+
+                          /* Action buttons */
+                          React.createElement(
+                            "div",
+                            { className: "d-flex gap-2 align-items-start" },
+                            React.createElement(
+                              "button",
+                              {
+                                className: "btn btn-success btn-sm",
+                                disabled: updating === a.id,
+                                onClick: () => updateStatus(a.id, "approved")
+                              },
+                              updating === a.id ? "Saving…" : "✓ Approve"
+                            ),
+                            React.createElement(
+                              "button",
+                              {
+                                className: "btn btn-danger btn-sm",
+                                disabled: updating === a.id,
+                                onClick: () => updateStatus(a.id, "declined")
+                              },
+                              updating === a.id ? "Saving…" : "✗ Decline"
+                            )
+                          )
+                        )
+                      )
+                    )
+                  )
+                )
+              : React.createElement(
+                  "div",
+                  { className: "text-center py-5 text-muted border rounded" },
+                  React.createElement("h5", null, "All clear!"),
+                  React.createElement("p", { className: "mb-0" }, "No pending submissions to review.")
+                )
+          )
+        )
+      );
+    }
+
+    function navLink(label, href, active = false) {
+      return React.createElement(
+        "a",
+        { href, className: "nav-link" + (active ? " fw-bold active" : "") },
+        label
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root"))
+      .render(React.createElement(ApprovalApp));
+  </script>
+</body>
+</html>

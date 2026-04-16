@@ -1,0 +1,29 @@
+[
+  {
+    "id": "ART-001",
+    "title": "The Rise of Young NBA Superstars",
+    "sport": "Basketball",
+    "access": "Free",
+    "author": "Justin Eusebe",
+    "words": 950,
+    "description": "The new NBA recruits are quickly becoming the face of the league, bringing high caliber strength and speed that veteran players cannot compete with."
+  },
+  {
+    "id": "ART-002",
+    "title": "NFL Teams to Watch This Season",
+    "sport": "Football",
+    "access": "Free",
+    "author": "Justin Eusebe",
+    "words": 820,
+    "description": "Several NFL teams have a lot to fight for this upcoming season after disappointing records in the past."
+  },
+  {
+    "id": "ART-003",
+    "title": "How Three-Point Shooting Changed Basketball",
+    "sport": "Basketball",
+    "access": "Subscribers Only",
+    "author": "Justin Eusebe",
+    "words": 1100,
+    "description": "The modern NBA relies heavily on the three-point shot, greatly attributed to the playstyle of Steph Curry."
+  }
+]

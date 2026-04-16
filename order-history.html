@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Submission History — Sports Daily</title>
+
+  <!-- Bootstrap -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+
+  <!-- React (CDN, no build tools) -->
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+</head>
+
+<body class="bg-white">
+  <div id="root"></div>
+
+  <script>
+    const { useState, useEffect } = React;
+    const API = "http://localhost:3000";
+
+    function OrderHistoryApp() {
+      const [articles, setArticles] = useState([]);
+      const [loading, setLoading]   = useState(true);
+      const [error, setError]       = useState(null);
+      const [filter, setFilter]     = useState("all");
+
+      useEffect(() => {
+        fetchArticles();
+      }, []);
+
+      function fetchArticles() {
+        setLoading(true);
+        // AJAX GET request to Node.js backend
+        fetch(`${API}/articles`)
+          .then(res => {
+            if (!res.ok) throw new Error("Server error");
+            return res.json();
+          })
+          .then(data => {
+            setArticles(data);
+            setLoading(false);
+          })
+          .catch(err => {
+            setError("Could not load submissions. Is the server running?");
+            setLoading(false);
+          });
+      }
+
+      const filtered = filter === "all"
+        ? articles
+        : articles.filter(a => a.status === filter);
+
+      return React.createElement(
+        "div",
+        null,
+
+        /* NAVBAR */
+        React.createElement(
+          "nav",
+          { className: "navbar navbar-expand navbar-light border-bottom px-3" },
+          React.createElement("a", { className: "navbar-brand fw-bold", href: "home-page.html" }, "Sports Daily"),
+          React.createElement(
+            "div",
+            { className: "navbar-nav" },
+            navLink("Home", "home-page.html"),
+            navLink("Article Catalog", "articles.html"),
+            navLink("Subscribe", "subscriber.html"),
+            navLink("Store", "shoppingcart.html"),
+            navLink("Submission History", "order-history.html", true),
+            navLink("Admin Approval", "approval.html")
+          )
+        ),
+
+        /* HEADER */
+        React.createElement(
+          "div",
+          { className: "bg-light border-bottom py-3 px-3 d-flex justify-content-between align-items-center" },
+          React.createElement(
+            "div",
+            null,
+            React.createElement("h2", { className: "h4 fw-bold mb-1" }, "Submission History"),
+            React.createElement("p", { className: "text-muted small mb-0" }, "Track the status of all article submissions")
+          ),
+          React.createElement(
+            "button",
+            { className: "btn btn-outline-dark btn-sm", onClick: fetchArticles },
+            "↻ Refresh"
+          )
+        ),
+
+        /* FILTER TABS */
+        React.createElement(
+          "div",
+          { className: "border-bottom px-3 pt-2" },
+          React.createElement(
+            "ul",
+            { className: "nav nav-tabs border-0" },
+            ["all", "pending", "approved", "declined"].map(tab =>
+              React.createElement(
+                "li",
+                { key: tab, className: "nav-item" },
+                React.createElement(
+                  "button",
+                  {
+                    className: "nav-link border-0 text-capitalize" + (filter === tab ? " active fw-bold" : ""),
+                    onClick: () => setFilter(tab)
+                  },
+                  tab,
+                  React.createElement(
+                    "span",
+                    { className: "badge ms-1 " + badgeBg(tab) },
+                    tab === "all"
+                      ? articles.length
+                      : articles.filter(a => a.status === tab).length
+                  )
+                )
+              )
+            )
+          )
+        ),
+
+        /* CONTENT */
+        React.createElement(
+          "div",
+          { className: "container-fluid px-3 py-4" },
+
+          loading && React.createElement("p", { className: "text-muted" }, "Loading submissions…"),
+          error   && React.createElement("div", { className: "alert alert-danger" }, error),
+
+          !loading && !error && (
+            filtered.length
+              ? filtered.map(a =>
+                  React.createElement(
+                    "div",
+                    { key: a.id, className: "card mb-3" },
+                    React.createElement(
+                      "div",
+                      { className: "card-body" },
+                      React.createElement(
+                        "div",
+                        { className: "d-flex justify-content-between align-items-start" },
+                        React.createElement(
+                          "div",
+                          null,
+                          React.createElement(
+                            "div",
+                            { className: "d-flex align-items-center gap-2 mb-1" },
+                            React.createElement("span", { className: "text-muted small fw-bold" }, a.id),
+                            React.createElement("span", { className: "badge " + statusBadge(a.status) }, a.status.toUpperCase())
+                          ),
+                          React.createElement("h6", { className: "fw-bold mb-1" }, a.title),
+                          React.createElement(
+                            "p",
+                            { className: "small text-muted mb-1" },
+                            "By ", a.author || "Unknown",
+                            " • ", a.sport,
+                            " • ", a.words, " words",
+                            " • ", a.access
+                          ),
+                          React.createElement(
+                            "p",
+                            { className: "small text-muted mb-0" },
+                            "Submitted: ", new Date(a.submittedAt).toLocaleDateString(),
+                            a.reviewedAt
+                              ? " • Reviewed: " + new Date(a.reviewedAt).toLocaleDateString()
+                              : ""
+                          )
+                        )
+                      )
+                    )
+                  )
+                )
+              : React.createElement(
+                  "p",
+                  { className: "text-muted border p-3 text-center" },
+                  "No submissions found for this filter."
+                )
+          )
+        )
+      );
+    }
+
+    /* ── helpers ── */
+
+    function statusBadge(status) {
+      if (status === "approved") return "bg-success";
+      if (status === "declined") return "bg-danger";
+      return "bg-warning text-dark";
+    }
+
+    function badgeBg(tab) {
+      if (tab === "approved") return "bg-success";
+      if (tab === "declined") return "bg-danger";
+      if (tab === "pending")  return "bg-warning text-dark";
+      return "bg-secondary";
+    }
+
+    function navLink(label, href, active = false) {
+      return React.createElement(
+        "a",
+        { href, className: "nav-link" + (active ? " fw-bold active" : "") },
+        label
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root"))
+      .render(React.createElement(OrderHistoryApp));
+  </script>
+</body>
+</html>

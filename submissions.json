@@ -1,0 +1,42 @@
+[
+  {
+    "id": "ART-001",
+    "numericId": 1,
+    "title": "test",
+    "sport": "Basketball",
+    "words": 100,
+    "access": "Free",
+    "author": "test",
+    "publication": {
+      "date": "2026-04-12",
+      "channels": [
+        "Web"
+      ],
+      "status": "Draft",
+      "notes": ""
+    },
+    "status": "declined",
+    "submittedAt": "2026-04-13T01:10:00.908Z",
+    "reviewedAt": "2026-04-13T01:11:58.983Z"
+  },
+  {
+    "id": "ART-002",
+    "numericId": 2,
+    "title": "test Article",
+    "sport": "Soccer",
+    "words": 100,
+    "access": "Free",
+    "author": "AuthorTest",
+    "publication": {
+      "date": "2026-04-12",
+      "channels": [
+        "Web"
+      ],
+      "status": "Draft",
+      "notes": ""
+    },
+    "status": "approved",
+    "submittedAt": "2026-04-13T01:34:24.056Z",
+    "reviewedAt": "2026-04-13T01:38:16.941Z"
+  }
+]
